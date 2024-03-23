@@ -1,5 +1,6 @@
 import { env } from '$env/dynamic/private';
 import { BaseEntity, DataSource, Entity, PrimaryColumn } from 'typeorm';
+import { browser, building, dev, version } from '$app/environment';
 
 @Entity()
 export class Review extends BaseEntity {
@@ -31,14 +32,16 @@ export const AppDataSource = new DataSource({
 	entities: [Review, Like]
 });
 
-await AppDataSource.initialize()
-	.then(() => {
-		console.log('Data Source has been initialized!');
-	})
-	.catch((err) => {
-		console.error('Error during Data Source initialization');
-		throw err;
-	});
+if (!building) {
+	await AppDataSource.initialize()
+		.then(() => {
+			console.log('Data Source has been initialized!');
+		})
+		.catch((err) => {
+			console.error('Error during Data Source initialization');
+			throw err;
+		});
+}
 
 // this makes devalue (svelte's serialize accept our objects)
 export function pojoize<T>(o: T) {
