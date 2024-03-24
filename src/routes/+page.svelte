@@ -28,7 +28,7 @@
 			required
 			autocapitalize="none"
 			pattern="[a-zA-Z0-9 ]*"
-			maxlength="100"
+			maxlength="40"
 			name="subject"
 			placeholder="Thing"
 			bind:value={thingText}
@@ -62,7 +62,7 @@
 </div>
 <div class="flex flex-col gap-4">
 	{#each reviews as review}
-		<div class="bg-stone-200 notice m-0! gap-3 flex flex-col">
+		<div class="bg-stone-200 notice m-0! gap-3 flex flex-col overflow-clip">
 			<div class="flex justify-between">
 				<b><a href="/things/{review.subject}">{review.subject}</a></b>
 				<span class="dark:text-stone-400 text-stone-600">{review.date.toLocaleString()}</span>

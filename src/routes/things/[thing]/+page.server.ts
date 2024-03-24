@@ -1,12 +1,12 @@
+import { saveReview } from '$lib/server';
 import { Review, pojoize } from '$lib/server/db';
 import type { Actions, PageServerLoad } from './$types';
 
 export const actions: Actions = {
 	async sendreview({ request, params: { thing } }) {
 		const data = await request.formData();
-		const { subject, text } = Object.fromEntries(data.entries()) as any;
-		if (!thing?.length || !text?.length) return { error: 'Invalid inputs' };
-		Review.insert({ author: 'anonymous', subject: thing.toLowerCase(), text });
+		const { text } = Object.fromEntries(data.entries()) as any;
+		return saveReview({ subject: thing, text });
 	}
 };
 

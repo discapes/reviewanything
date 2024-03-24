@@ -29,7 +29,7 @@
 			required
 			autocapitalize="none"
 			pattern="[a-zA-Z0-9 ]*"
-			maxlength="100"
+			maxlength="40"
 			name="subject"
 			placeholder="Thing"
 			bind:value={thingText}
