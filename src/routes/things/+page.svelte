@@ -3,7 +3,7 @@
 	import { text } from '@sveltejs/kit';
 
 	let { data, form } = $props();
-	let { total, reviews } = $derived(data);
+	let { things, total } = $derived(data);
 	$effect(() => void (form?.error && alert(form.error)));
 
 	let thingText = $state('');
@@ -57,18 +57,9 @@
 	</form>
 </div>
 
-<div class="flex justify-between items-center">
-	<h4>All reviews ({total})</h4>
-	<a href="/things">All things</a>
-</div>
+<h4>All things ({total})</h4>
 <div class="flex flex-col gap-4">
-	{#each reviews as review}
-		<div class="bg-stone-200 notice m-0! gap-3 flex flex-col">
-			<div class="flex justify-between">
-				<b><a href="/things/{review.subject}">{review.subject}</a></b>
-				<span class="text-stone-500">{review.date.toLocaleString()}</span>
-			</div>
-			<span>{review.text}</span>
-		</div>
+	{#each things as thing}
+		<span><a href="/things/{thing.name}">{thing.name} </a>&nbsp;({thing.count})</span>
 	{/each}
 </div>

@@ -19,6 +19,7 @@ export const load: PageServerLoad = async ({ params: { thing } }) => {
 
 	return {
 		reviews: reviews.map(pojoize),
+		total: reviews.length,
 		thing
 	};
 };

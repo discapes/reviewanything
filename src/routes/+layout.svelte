@@ -4,7 +4,7 @@
 	import './app.css';
 </script>
 
-<header class="bg-stone-100! pb-3!">
+<header class="pb-3!">
 	<h1 class="text-4xl! md:text-5xl!"><a href="/">reviewanything.top</a></h1>
 	<p class="mt-8!">
 		Review literally anything, from <a href="/things/life"><code>life</code></a> to
@@ -15,5 +15,5 @@
 	<slot />
 </main>
 <footer>
-	<p>Created by Miika Tuominen</p>
+	<p>Built with ♥ by M</p>
 </footer>
