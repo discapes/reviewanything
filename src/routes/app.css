@@ -1,3 +1,19 @@
 code {
-    padding: 0 5px;
+	padding: 0 5px;
+}
+:root {
+	font-family:
+		'Nimbus Sans',
+		-apple-system,
+		BlinkMacSystemFont,
+		'Avenir Next',
+		Avenir,
+		'Nimbus Sans L',
+		Roboto,
+		'Noto Sans',
+		'Segoe UI',
+		Arial,
+		Helvetica,
+		'Helvetica Neue',
+		sans-serif;
 }

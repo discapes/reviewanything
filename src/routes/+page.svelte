@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
-	import { text } from '@sveltejs/kit';
 
 	let { data, form } = $props();
 	let { total, reviews } = $derived(data);
@@ -58,7 +57,7 @@
 </div>
 
 <div class="flex justify-between items-center">
-	<h4>All reviews ({total})</h4>
+	<h2 class="">All reviews ({total})</h2>
 	<a href="/things">All things</a>
 </div>
 <div class="flex flex-col gap-4">
@@ -66,7 +65,7 @@
 		<div class="bg-stone-200 notice m-0! gap-3 flex flex-col">
 			<div class="flex justify-between">
 				<b><a href="/things/{review.subject}">{review.subject}</a></b>
-				<span class="text-stone-500">{review.date.toLocaleString()}</span>
+				<span class="dark:text-stone-400 text-stone-600">{review.date.toLocaleString()}</span>
 			</div>
 			<span>{review.text}</span>
 		</div>

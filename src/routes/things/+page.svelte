@@ -57,7 +57,7 @@
 	</form>
 </div>
 
-<h4>All things ({total})</h4>
+<h2>All things ({total})</h2>
 <div class="flex flex-col gap-4">
 	{#each things as thing}
 		<span><a href="/things/{thing.name}">{thing.name} </a>&nbsp;({thing.count})</span>

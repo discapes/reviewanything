@@ -47,7 +47,7 @@
 </div>
 
 <div class="flex justify-between items-center">
-	<h4>All reviews for {thing} ({total})</h4>
+	<h2>All reviews for {thing} ({total})</h2>
 	<a href="/things">All things</a>
 </div>
 <div class="flex flex-col gap-4">
