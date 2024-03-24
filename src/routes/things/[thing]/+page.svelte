@@ -52,7 +52,7 @@
 </div>
 <div class="flex flex-col gap-4">
 	{#each reviews as review}
-		<div class="bg-stone-200 notice m-0! flex-col flex gap-3">
+		<div class="bg-stone-200 notice m-0! flex-col flex gap-3 overflow-clip">
 			<span>{review.text}</span>
 			<span class="text-stone-500">{review.date.toLocaleString()}</span>
 		</div>
