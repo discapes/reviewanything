@@ -12,7 +12,7 @@
 	import Icon from './Icon.svelte';
 
 	let { data } = $props();
-	let { auth } = $derived(data);
+	let { userInfo } = $derived(data);
 	let kc: Keycloak;
 
 	if (browser) {
@@ -40,9 +40,9 @@
 		Review literally anything, from <a href="/things/life"><code>life</code></a> to
 		<a href="/things/geometry dash"><code>Geometry Dash</code></a>
 	</p>
-	{#if auth}
+	{#if userInfo}
 		<div class="flex items-center justify-center gap-3">
-			<span>Welcome back, {auth.given_name}</span>
+			<span>Welcome back, {userInfo.given_name}</span>
 			<button class="m-0! text-sm!" onclick={() => kc.accountManagement()}>
 				<Icon scale={0.75} clazz="invert" icon={iGear} />
 				Account settings

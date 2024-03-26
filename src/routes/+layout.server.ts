@@ -1,3 +1,4 @@
+import { PUBLIC_KC_URL } from '$env/static/public';
 import type { LayoutServerLoad } from './$types';
 import jwt from 'jsonwebtoken';
 
@@ -7,7 +8,7 @@ MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAq/dcIbhN35r3fpD5pid1Z/CM6n4RhwnDREJ/
 -----END PUBLIC KEY-----
 `;
 
-export type Auth = {
+export type ATPayload = {
 	exp: number;
 	iat: number;
 	auth_time: number;
@@ -39,17 +40,38 @@ export type Auth = {
 	email: string;
 };
 
+export type UserInfo = {
+	sub: string;
+	email_verified: boolean;
+	name: string;
+	preferred_username: string;
+	given_name: string;
+	family_name: string;
+	email: string;
+};
+
 export const load: LayoutServerLoad = async ({ cookies }) => {
-	let auth: Auth | undefined;
+	let payload: ATPayload | undefined;
+	let userInfo: UserInfo | undefined;
 	try {
-		auth = jwt.verify(cookies.get('accessToken')!, pubKey, {
+		payload = jwt.verify(cookies.get('accessToken')!, pubKey, {
 			algorithms: ['RS256']
-		}) as Auth;
-		console.log(auth);
+		}) as ATPayload;
+		console.log(payload);
+		userInfo = await fetch(
+			PUBLIC_KC_URL + '/realms/reviewanything/protocol/openid-connect/userinfo',
+			{
+				headers: {
+					Authorization: 'Bearer ' + cookies.get('accessToken')
+				}
+			}
+		).then((res) => res.json());
+		console.log(userInfo);
 	} catch (e) {
 		console.error(e);
 	}
 	return {
-		auth
+		payload,
+		userInfo
 	};
 };
