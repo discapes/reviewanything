@@ -1,5 +1,8 @@
 <script lang="ts">
-	let { icon, clazz, scale = 1 }: { icon: string; clazz: string; scale?: number } = $props();
+	let clazz: string = '';
+	export { clazz as class };
+	export let icon: string;
+	export let scale: number = 1;
 </script>
 
 <img

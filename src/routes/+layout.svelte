@@ -44,17 +44,17 @@
 		<div class="flex items-center justify-center gap-3">
 			<span>Welcome back, {userInfo.given_name}</span>
 			<button class="m-0! text-sm!" onclick={() => kc.accountManagement()}>
-				<Icon scale={0.75} clazz="invert" icon={iGear} />
+				<Icon scale={0.75} class="invert" icon={iGear} />
 				Account settings
 			</button>
 			<button class="m-0! text-sm!" onclick={logout}>
-				<Icon scale={0.75} clazz="invert" icon={iLogout} />
+				<Icon scale={0.75} class="invert" icon={iLogout} />
 				Log out
 			</button>
 		</div>
 	{:else}
 		<button onclick={() => kc.login()}>
-			<Icon clazz="invert" icon={iLogin} />
+			<Icon class="invert" icon={iLogin} />
 			Log in / Register
 		</button>
 	{/if}
