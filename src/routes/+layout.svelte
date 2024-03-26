@@ -5,7 +5,11 @@
 	import Keycloak from 'keycloak-js';
 	import { browser } from '$app/environment';
 	import { invalidateAll } from '$app/navigation';
-	import { backIn } from 'svelte/easing';
+	import iLogout from '$svg/mdi/logout.svg?raw';
+	import iLogin from '$svg/fluent-mdl2/signin.svg?raw';
+	import iGear from '$svg/ph/gear-six-fill.svg?raw';
+	import { PUBLIC_KC_URL } from '$env/static/public';
+	import Icon from './Icon.svelte';
 
 	let { data } = $props();
 	let { auth } = $derived(data);
@@ -13,7 +17,7 @@
 
 	if (browser) {
 		kc = new Keycloak({
-			url: 'http://localhost:8089',
+			url: PUBLIC_KC_URL,
 			realm: 'reviewanything',
 			clientId: 'reviewanything'
 		});
@@ -37,10 +41,22 @@
 		<a href="/things/geometry dash"><code>Geometry Dash</code></a>
 	</p>
 	{#if auth}
-		Welcome back, <a href="{auth.iss}/account">{auth.given_name}</a>
-		<button onclick={logout}>Log out</button>
+		<div class="flex items-center justify-center gap-3">
+			<span>Welcome back, {auth.given_name}</span>
+			<button class="m-0! text-sm!" onclick={() => kc.accountManagement()}>
+				<Icon scale={0.75} clazz="invert" icon={iGear} />
+				Account settings
+			</button>
+			<button class="m-0! text-sm!" onclick={logout}>
+				<Icon scale={0.75} clazz="invert" icon={iLogout} />
+				Log out
+			</button>
+		</div>
 	{:else}
-		<button onclick={() => kc.login()}>Log in / Register</button>
+		<button onclick={() => kc.login()}>
+			<Icon clazz="invert" icon={iLogin} />
+			Log in / Register
+		</button>
 	{/if}
 </header>
 <main class="">
