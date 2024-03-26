@@ -20,6 +20,7 @@ export const load: LayoutServerLoad = async ({ cookies }) => {
 		payload = authenticate(cookies);
 		//console.log(payload);
 		if (payload) {
+			console.log('ASJHDUUIOASHD UYAWgduaqygyuad');
 			userInfo = await fetch(
 				PUBLIC_KC_URL + '/realms/reviewanything/protocol/openid-connect/userinfo',
 				{

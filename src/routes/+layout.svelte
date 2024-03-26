@@ -10,6 +10,8 @@
 	import iGear from '$svg/ph/gear-six-fill.svg?raw';
 	import { PUBLIC_KC_URL } from '$env/static/public';
 	import Icon from './Icon.svelte';
+	import ReviewInput from './ReviewInput.svelte';
+	import { page } from '$app/stores';
 
 	let { data } = $props();
 	let { userInfo } = $derived(data);
@@ -23,18 +25,18 @@
 		});
 		kc.init({ checkLoginIframe: false }).then((auth) => {
 			if (auth) {
-				document.cookie = 'accessToken=' + kc.token;
+				document.cookie = `accessToken=${kc.token}; Path=/; Secure;`;
 				invalidateAll();
 			}
 		});
 	}
 	function logout() {
-		document.cookie = 'accessToken=';
+		document.cookie = 'accessToken=; Path=/; Secure;';
 		invalidateAll();
 	}
 </script>
 
-<header class="pb-3!">
+<header class="pb-3! gap-3">
 	<h1 class="text-4xl! md:text-5xl!"><a href="/">reviewanything.top</a></h1>
 	<p class="mt-8!">
 		Review literally anything, from <a href="/things/life"><code>life</code></a> to
@@ -51,6 +53,10 @@
 				<Icon scale={0.75} class="invert" icon={iLogout} />
 				Log out
 			</button>
+			<a class="m-0! text-sm! button" href="/likes">
+				<Icon scale={0.75} class="invert" icon={iLogout} />
+				Liked reviews
+			</a>
 		</div>
 	{:else}
 		<button onclick={() => kc.login()}>
@@ -58,6 +64,9 @@
 			Log in / Register
 		</button>
 	{/if}
+	<div class="m-3">
+		<ReviewInput></ReviewInput>
+	</div>
 </header>
 <main class="">
 	<slot />

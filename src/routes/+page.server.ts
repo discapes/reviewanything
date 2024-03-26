@@ -2,6 +2,7 @@ import { saveReview } from '$lib/server';
 import { Like, Review, pojoize } from '$lib/server/db';
 import type { Actions, PageServerLoad } from './$types';
 import { authenticate } from '$lib/server/auth';
+import { getReviews } from '$lib/server/reviews';
 
 export const actions: Actions = {
 	async sendreview({ request }) {
@@ -46,51 +47,12 @@ reviews = (await Review.find({
 			order: { date: 'DESC' }
 		})) as any[];
 */
-export const load: PageServerLoad = async ({ params, parent }) => {
-	const { userInfo } = await parent();
-
-	let reviews: (Review & { is_liked: boolean })[];
-	if (!userInfo) {
-		reviews = await reviewsWithLikes();
-	} else {
-		reviews = await reviewsWithMyLikes(userInfo.sub);
-	}
-	//console.log(reviews);
+export const load: PageServerLoad = async ({ params, cookies }) => {
+	const auth = authenticate(cookies);
+	let reviews = await getReviews({ userUuid: auth?.sub });
 
 	return {
 		total: reviews.length,
-		reviews: reviews.map(pojoize)
+		reviews
 	};
 };
-
-function reviewsWithLikes() {
-	return Review.createQueryBuilder('r')
-		.select([
-			`r.date as date`,
-			`r.subject as subject`,
-			`r.text as text`,
-			`r.uuid as uuid`,
-			`COUNT(l2.review_uuid) AS total_likes`
-		])
-		.leftJoin('like', 'l2', 'l2.review_uuid = r.uuid')
-		.orderBy('date', 'DESC')
-		.groupBy('r.date, r.subject, r.text, r.uuid')
-		.getRawMany();
-}
-
-function reviewsWithMyLikes(userUuid: string) {
-	return Review.createQueryBuilder('r')
-		.select([
-			`r.date as date`,
-			`r.subject as subject`,
-			`r.text as text`,
-			`r.uuid as uuid`,
-			`CASE WHEN l.user_uuid IS NOT NULL THEN true ELSE false END AS is_liked`,
-			`COUNT(l2.review_uuid) AS total_likes`
-		])
-		.leftJoin('like', 'l', `l.review_uuid = r.uuid AND l.user_uuid = :userUuid`, { userUuid })
-		.leftJoin('like', 'l2', 'l2.review_uuid = r.uuid')
-		.groupBy('r.date, r.subject, r.text, r.uuid, l.user_uuid')
-		.orderBy('date', 'DESC')
-		.getRawMany();
-}

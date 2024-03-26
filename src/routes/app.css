@@ -18,7 +18,8 @@ code {
 		sans-serif;
 }
 
-button {
+button,
+.button {
 	display: inline-flex;
 	justify-content: center;
 	gap: 5px;

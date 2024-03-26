@@ -14,6 +14,8 @@ export class Review extends BaseEntity {
 	text!: string;
 	@PrimaryColumn('timestamptz', { default: () => 'now()' })
 	date!: Date;
+	total_likes!: number;
+	is_liked!: boolean;
 }
 
 @Entity()
