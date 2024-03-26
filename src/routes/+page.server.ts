@@ -40,17 +40,20 @@ export const actions: Actions = {
 	}
 };
 
+/*
+reviews = (await Review.find({
+			select: ['date', 'subject', 'text', 'uuid'],
+			order: { date: 'DESC' }
+		})) as any[];
+*/
 export const load: PageServerLoad = async ({ params, parent }) => {
 	const { userInfo } = await parent();
 
 	let reviews: (Review & { is_liked: boolean })[];
 	if (!userInfo) {
-		reviews = (await Review.find({
-			select: ['date', 'subject', 'text', 'uuid'],
-			order: { date: 'DESC' }
-		})) as any[];
+		reviews = await reviewsWithLikes();
 	} else {
-		reviews = await reviewsWithLikes(userInfo.sub);
+		reviews = await reviewsWithMyLikes(userInfo.sub);
 	}
 	//console.log(reviews);
 
@@ -60,16 +63,34 @@ export const load: PageServerLoad = async ({ params, parent }) => {
 	};
 };
 
-function reviewsWithLikes(userUuid: string) {
+function reviewsWithLikes() {
 	return Review.createQueryBuilder('r')
 		.select([
 			`r.date as date`,
 			`r.subject as subject`,
 			`r.text as text`,
 			`r.uuid as uuid`,
-			`CASE WHEN l.user_uuid IS NOT NULL THEN true ELSE false END AS is_liked`
+			`COUNT(l2.review_uuid) AS total_likes`
+		])
+		.leftJoin('like', 'l2', 'l2.review_uuid = r.uuid')
+		.orderBy('date', 'DESC')
+		.groupBy('r.date, r.subject, r.text, r.uuid')
+		.getRawMany();
+}
+
+function reviewsWithMyLikes(userUuid: string) {
+	return Review.createQueryBuilder('r')
+		.select([
+			`r.date as date`,
+			`r.subject as subject`,
+			`r.text as text`,
+			`r.uuid as uuid`,
+			`CASE WHEN l.user_uuid IS NOT NULL THEN true ELSE false END AS is_liked`,
+			`COUNT(l2.review_uuid) AS total_likes`
 		])
 		.leftJoin('like', 'l', `l.review_uuid = r.uuid AND l.user_uuid = :userUuid`, { userUuid })
+		.leftJoin('like', 'l2', 'l2.review_uuid = r.uuid')
+		.groupBy('r.date, r.subject, r.text, r.uuid, l.user_uuid')
 		.orderBy('date', 'DESC')
 		.getRawMany();
 }
