@@ -1,6 +1,6 @@
 import { env } from '$env/dynamic/private';
-import { drizzle } from 'drizzle-orm/node-postgres';
-import { Pool } from 'pg';
+import { drizzle, type NodePgDatabase } from 'drizzle-orm/node-postgres';
+import pg from 'pg';
 import { building } from '$app/environment';
 import * as schema from './schema';
 
@@ -8,29 +8,33 @@ import * as schema from './schema';
 export * from './schema';
 
 // Type for the drizzle instance with schema
-export type DrizzleDB = ReturnType<typeof drizzle<typeof schema>>;
+export type DrizzleDB = NodePgDatabase<typeof schema>;
 
 let db: DrizzleDB | null = null;
-let pool: Pool | null = null;
+let client: pg.Client | null = null;
+let clientConnected = false;
+let currentConnectionString: string | null = null;
 
 export const getDb = (connectionString?: string): DrizzleDB => {
-	if (db) return db;
-
-	// Priority: Cloudflare Hyperdrive binding > Environment variable
 	const url = connectionString || env.DB_URL;
 
 	if (!url) {
 		throw new Error('Database connection string not provided');
 	}
 
-	// Create pg Pool
-	pool = new Pool({
-		connectionString: url,
-		// For Hyperdrive, use fewer connections as it handles pooling
-		max: connectionString ? 1 : 10
-	});
+	// Reuse if same connection string and already set up
+	if (db && currentConnectionString === url) {
+		return db;
+	}
 
-	db = drizzle(pool, { schema, logger: true });
+	// Create new client
+	client = new pg.Client({
+		connectionString: url
+	});
+	clientConnected = false;
+
+	db = drizzle(client, { schema, logger: true });
+	currentConnectionString = url;
 
 	if (!building) {
 		console.log('Drizzle ORM initialized!');
@@ -39,11 +43,10 @@ export const getDb = (connectionString?: string): DrizzleDB => {
 	return db;
 };
 
-// Helper to reset connection (useful for testing or connection issues)
-export const resetDb = async () => {
-	if (pool) {
-		await pool.end();
-		pool = null;
-		db = null;
+// Must be called before any queries
+export const ensureConnected = async () => {
+	if (client && !clientConnected) {
+		await client.connect();
+		clientConnected = true;
 	}
 };
