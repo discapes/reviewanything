@@ -22,9 +22,9 @@ export async function getReviews({
 			r.uuid as uuid,
 			COUNT(l2.review_uuid)::int AS total_likes
 			${userUuid && !onlyLiked ? sql`, CASE WHEN l.user_uuid IS NOT NULL THEN true ELSE false END AS is_liked` : sql``}
-		FROM review r
-		${userUuid ? sql`LEFT JOIN "like" l ON l.review_uuid = r.uuid AND l.user_uuid = ${userUuid}` : sql``}
-		LEFT JOIN "like" l2 ON l2.review_uuid = r.uuid
+		FROM reviewanything.review r
+		${userUuid ? sql`LEFT JOIN reviewanything."like" l ON l.review_uuid = r.uuid AND l.user_uuid = ${userUuid}` : sql``}
+		LEFT JOIN reviewanything."like" l2 ON l2.review_uuid = r.uuid
 		WHERE 1=1
 			${subject ? sql`AND r.subject = ${subject}` : sql``}
 			${onlyLiked && userUuid ? sql`AND l.user_uuid = ${userUuid}` : sql``}

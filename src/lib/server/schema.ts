@@ -1,4 +1,4 @@
-import { pgTable, pgSchema, text, uuid, timestamp, primaryKey } from 'drizzle-orm/pg-core';
+import { pgSchema, text, uuid, timestamp, primaryKey } from 'drizzle-orm/pg-core';
 
 // Custom schema to avoid public schema permission issues
 export const appSchema = pgSchema('reviewanything');
