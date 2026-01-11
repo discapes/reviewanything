@@ -1,8 +1,9 @@
 import { saveReview } from '$lib/server';
-import { Like, Review, pojoize } from '$lib/server/db';
+import { getDb, likes } from '$lib/server/db';
 import type { Actions, PageServerLoad } from './$types';
 import { authenticate } from '$lib/server/auth';
 import { getReviews } from '$lib/server/reviews';
+import { eq, and } from 'drizzle-orm';
 
 export const actions: Actions = {
 	async sendreview({ request }) {
@@ -12,7 +13,7 @@ export const actions: Actions = {
 	},
 	async likeReview({ request, cookies }) {
 		const data = await request.formData();
-		const auth = authenticate(cookies);
+		const auth = await authenticate(cookies);
 		if (!auth)
 			return {
 				error: 'Not authenticated'
@@ -23,32 +24,29 @@ export const actions: Actions = {
 				error: 'No review uuid'
 			};
 
-		const existingLike = await Like.findOne({
-			where: {
-				review_uuid: reviewUuid,
-				user_uuid: auth.sub
-			}
-		});
+		const db = getDb();
 
-		if (existingLike) {
-			await existingLike.remove();
+		const existingLike = await db
+			.select()
+			.from(likes)
+			.where(and(eq(likes.review_uuid, reviewUuid), eq(likes.user_uuid, auth.sub)))
+			.limit(1);
+
+		if (existingLike.length > 0) {
+			await db
+				.delete(likes)
+				.where(and(eq(likes.review_uuid, reviewUuid), eq(likes.user_uuid, auth.sub)));
 		} else {
-			await Like.create({
+			await db.insert(likes).values({
 				review_uuid: reviewUuid,
 				user_uuid: auth.sub
-			}).save();
+			});
 		}
 	}
 };
 
-/*
-reviews = (await Review.find({
-			select: ['date', 'subject', 'text', 'uuid'],
-			order: { date: 'DESC' }
-		})) as any[];
-*/
 export const load: PageServerLoad = async ({ params, cookies }) => {
-	const auth = authenticate(cookies);
+	const auth = await authenticate(cookies);
 	let reviews = await getReviews({ userUuid: auth?.sub });
 
 	return {

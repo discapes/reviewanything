@@ -1,4 +1,4 @@
-import { Review } from './db';
+import { getDb, reviews } from './db';
 
 export function saveReview({ subject, text }: { subject: string; text: string }) {
 	if (
@@ -11,5 +11,11 @@ export function saveReview({ subject, text }: { subject: string; text: string })
 		text.length < 1
 	)
 		return { error: 'Invalid inputs' };
-	Review.insert({ author: 'anonymous', subject: subject.toLowerCase(), text });
+
+	const db = getDb();
+	db.insert(reviews).values({
+		author: 'anonymous',
+		subject: subject.toLowerCase(),
+		text
+	}).execute();
 }

@@ -16,7 +16,7 @@ export const load: LayoutServerLoad = async ({ cookies }) => {
   let payload: ATPayload | undefined;
   let userInfo: UserInfo | undefined;
   try {
-    payload = authenticate(cookies);
+    payload = await authenticate(cookies);
     //console.log(payload);
     if (payload) {
       console.log('ASJHDUUIOASHD UYAWgduaqygyuad');

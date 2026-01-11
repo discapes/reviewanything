@@ -2,12 +2,12 @@
 	import Icon from './Icon.svelte';
 	import iHeart from '$svg/mdi/heart.svg?raw';
 	import iHeartOutline from '$svg/mdi/heart-outline.svg?raw';
-	import type { Review } from '$lib/server/db';
+	import type { ReviewWithLikes } from '$lib/server/db';
 	import { invalidateAll } from '$app/navigation';
 
-	const { review }: { review: Review } = $props();
+	const { review }: { review: ReviewWithLikes } = $props();
 
-	async function like(review: Review & { is_liked: boolean }) {
+	async function like(review: ReviewWithLikes) {
 		const fd = new FormData();
 		fd.append('reviewUuid', review.uuid);
 		review.is_liked = !review.is_liked;

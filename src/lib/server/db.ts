@@ -1,69 +1,49 @@
 import { env } from '$env/dynamic/private';
-import { BaseEntity, DataSource, Entity, PrimaryColumn } from 'typeorm';
-import { browser, building, dev, version } from '$app/environment';
+import { drizzle } from 'drizzle-orm/node-postgres';
+import { Pool } from 'pg';
+import { building } from '$app/environment';
+import * as schema from './schema';
 
-@Entity()
-export class Review extends BaseEntity {
-  @PrimaryColumn('uuid', { default: () => 'gen_random_uuid()' })
-  uuid!: string;
-  @PrimaryColumn('text')
-  author!: string;
-  @PrimaryColumn('text')
-  subject!: string;
-  @PrimaryColumn('text')
-  text!: string;
-  @PrimaryColumn('timestamptz', { default: () => 'now()' })
-  date!: Date;
-  total_likes!: number;
-  is_liked!: boolean;
-}
+// Re-export schema for convenience
+export * from './schema';
 
-@Entity()
-export class Like extends BaseEntity {
-  @PrimaryColumn('uuid')
-  user_uuid!: string;
-  @PrimaryColumn('uuid')
-  review_uuid!: string;
-}
+// Type for the drizzle instance with schema
+export type DrizzleDB = ReturnType<typeof drizzle<typeof schema>>;
 
-//https://aistudio.google.com/app/prompts?state=%7B%22ids%22:%5B%221GR56bhA2O9UruC4qC3cHO6cYAsqlFHY3%22%5D,%22action%22:%22open%22,%22userId%22:%22113480972864582475662%22,%22resourceKeys%22:%7B%7D%7D&usp=sharing
-//
+let db: DrizzleDB | null = null;
+let pool: Pool | null = null;
 
-let dataSource: DataSource;
+export const getDb = (connectionString?: string): DrizzleDB => {
+	if (db) return db;
 
-export const getDataSource = async (connectionString?: string) => {
-  // 1. Return existing initialized source if available
-  if (dataSource?.isInitialized) return dataSource;
+	// Priority: Cloudflare Hyperdrive binding > Environment variable
+	const url = connectionString || env.DB_URL;
 
-  // 2. Determine connection string: 
-  // Priority: Cloudflare Binding > Dynamic Env Var
-  const url = connectionString || env.DB_URL;
+	if (!url) {
+		throw new Error('Database connection string not provided');
+	}
 
-  dataSource = new DataSource({
-    type: 'postgres',
-    url: url,
-    logging: true,
-    synchronize: true, // Note: Consider migrations for production
-    entities: [Review, Like],
-    // Optional: Cloudflare works best with 'pg' driver
-  });
+	// Create pg Pool
+	pool = new Pool({
+		connectionString: url,
+		// For Hyperdrive, use fewer connections as it handles pooling
+		max: connectionString ? 1 : 10
+	});
 
-  if (!building) {
-    await dataSource.initialize();
-    console.log('Data Source initialized!');
-  }
+	db = drizzle(pool, { schema, logger: true });
 
-  return dataSource;
+	if (!building) {
+		console.log('Drizzle ORM initialized!');
+	}
+
+	return db;
 };
 
-// For non-Cloudflare environments (dev/Node), auto-init on load
-if (!building && !import.meta.env.SSR) {
-  // This allows it to work exactly like your current code in local node dev
-  getDataSource().catch(err => console.error("Initial connection failed", err));
-}
-
-// this makes devalue (svelte's serialize accept our objects)
-export function pojoize<T>(o: T) {
-  Object.setPrototypeOf(o, Object.prototype);
-  return o;
-}
+// Helper to reset connection (useful for testing or connection issues)
+export const resetDb = async () => {
+	if (pool) {
+		await pool.end();
+		pool = null;
+		db = null;
+	}
+};
