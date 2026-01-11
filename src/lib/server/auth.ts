@@ -1,51 +1,58 @@
 import type { Cookies } from '@sveltejs/kit';
-import jwt from 'jsonwebtoken';
+import { jwtVerify, importSPKI } from 'jose';
+import { env } from '$env/dynamic/private';
 
 export type ATPayload = {
-	exp: number;
-	iat: number;
-	auth_time: number;
-	jti: string;
-	iss: string;
-	aud: string;
-	sub: string;
-	typ: string;
-	azp: string;
-	nonce: string;
-	session_state: string;
-	acr: string;
-	'allowed-origins': string[];
-	realm_access: {
-		roles: string[];
-	};
-	resource_access: {
-		account: {
-			roles: any[];
-		};
-	};
-	scope: string;
-	sid: string;
-	email_verified: boolean;
-	name: string;
-	preferred_username: string;
-	given_name: string;
-	family_name: string;
-	email: string;
+  exp: number;
+  iat: number;
+  auth_time: number;
+  jti: string;
+  iss: string;
+  aud: string;
+  sub: string;
+  typ: string;
+  azp: string;
+  nonce: string;
+  session_state: string;
+  acr: string;
+  'allowed-origins': string[];
+  realm_access: {
+    roles: string[];
+  };
+  resource_access: {
+    account: {
+      roles: any[];
+    };
+  };
+  scope: string;
+  sid: string;
+  email_verified: boolean;
+  name: string;
+  preferred_username: string;
+  given_name: string;
+  family_name: string;
+  email: string;
 };
 
-const pubKey = `
+const pubKeyPEM = `
 -----BEGIN PUBLIC KEY-----
-MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAq/dcIbhN35r3fpD5pid1Z/CM6n4RhwnDREJ/QCewSYiXtgik8GiM90BQtBBu7dRZuKwhaIDbEsf5yDouWEri1kM1AjE7WO9KJ2ZxvO3wro1biIuFMrafRtd0ZISsOc/mchbIAI5f2i/2B7sJbl3oTRkUHvh47GhtaHtRlh7NkWt4H5QktTem/jiPreTl/2wvYOuvBruScKDsQVbMUSXrxI4gkdJ+DTe/AJ740VO+H4VFOS4ohdBaEE83ExgiB/Mk9GaOVz6ZTMsnrHwwgXW9tl/0LwkvOA1BNVVYF3s2srXaeOrwxOQtkxY8mIQ1T/YaRFovFjafg0UVk9H8PKFkWQIDAQAB
+${env.KC_PUBLIC_KEY}
 -----END PUBLIC KEY-----
 `;
 
-export function authenticate(cookies: Cookies) {
-	try {
-		return jwt.verify(cookies.get('accessToken')!, pubKey, {
-			algorithms: ['RS256']
-		}) as ATPayload;
-	} catch (e) {
-		console.error(e);
-		return undefined;
-	}
+export async function authenticate(cookies: Cookies) {
+  const token = cookies.get('accessToken');
+  if (!token) return undefined;
+
+  try {
+    const ecPublicKey = await importSPKI(pubKeyPEM, 'RS256');
+    const { payload } = await jwtVerify(token, ecPublicKey, {
+      algorithms: ['RS256']
+    });
+
+    return payload as unknown as ATPayload;
+  } catch (e) {
+    console.error('JWT Verification failed:', e);
+    return undefined;
+  }
 }
