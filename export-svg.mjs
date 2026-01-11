@@ -5,41 +5,48 @@ import { downloadNPMPackage, IconSet, exportToDirectory } from '@iconify/tools';
 const cacheDir = 'cache';
 const outDir = 'node_modules/_svg';
 
+const iconsets = [
+  "mdi",
+  "fluent-mdl2",
+  "ph",
+]
+
 // Download all icon sets
 console.log('Downloading latest package');
 const downloaded = await downloadNPMPackage({
-   package: '@iconify/json',
-   target: cacheDir,
+  package: '@iconify/json',
+  target: cacheDir,
 });
 console.log('Downloaded version', downloaded.version);
 
 // Get a list of icon sets
 const list = JSON.parse(
-   await readFile(downloaded.contentsDir + '/collections.json', 'utf8')
+  await readFile(downloaded.contentsDir + '/collections.json', 'utf8')
 );
 const prefixes = Object.keys(list);
 console.log('Got', prefixes.length, 'icon sets');
 
 // Export each icon set
 for (let i = 0; i < prefixes.length; i++) {
-   const prefix = prefixes[i];
+  const prefix = prefixes[i];
+  if (!iconsets.includes(prefix)) continue;
 
-   // Read file
-   const data = JSON.parse(
-       await readFile(
-           downloaded.contentsDir + '/json/' + prefix + '.json',
-           'utf8'
-       )
-   );
+  // Read file
+  const data = JSON.parse(
+    await readFile(
+      downloaded.contentsDir + '/json/' + prefix + '.json',
+      'utf8'
+    )
+  );
 
-   // Create IconSet
-   const iconSet = new IconSet(data);
+  // Create IconSet
+  const iconSet = new IconSet(data);
 
-   // Export it
-   console.log('Exporting', iconSet.info.name);
-   await exportToDirectory(iconSet, {
-       target: outDir + '/' + prefix,
-   });
+  // Export it
+  console.log('Exporting', iconSet.info.name);
+  await exportToDirectory(iconSet, {
+    target: outDir + '/' + prefix,
+  });
 }
 
 console.log('Done');
