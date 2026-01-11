@@ -1,7 +1,10 @@
-import { pgTable, text, uuid, timestamp, primaryKey } from 'drizzle-orm/pg-core';
+import { pgTable, pgSchema, text, uuid, timestamp, primaryKey } from 'drizzle-orm/pg-core';
+
+// Custom schema to avoid public schema permission issues
+export const appSchema = pgSchema('reviewanything');
 
 // Review table - matches existing TypeORM entity
-export const reviews = pgTable(
+export const reviews = appSchema.table(
 	'review',
 	{
 		uuid: uuid('uuid').defaultRandom().notNull(),
@@ -14,7 +17,7 @@ export const reviews = pgTable(
 );
 
 // Like table - matches existing TypeORM entity
-export const likes = pgTable(
+export const likes = appSchema.table(
 	'like',
 	{
 		user_uuid: uuid('user_uuid').notNull(),
