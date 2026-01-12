@@ -13,17 +13,23 @@ export type DrizzleDB = NodePgDatabase<typeof schema>;
 let db: DrizzleDB | null = null;
 let client: pg.Client | null = null;
 let clientConnected = false;
-let currentConnectionString: string | null = null;
+let cachedConnectionString: string | null = null;
 
 export const getDb = (connectionString?: string): DrizzleDB => {
-	const url = connectionString || env.DB_URL;
+	// Use provided connection string, or cached one, or env variable
+	const url = connectionString || cachedConnectionString || env.DB_URL;
 
 	if (!url) {
 		throw new Error('Database connection string not provided');
 	}
 
+	// Cache the connection string for subsequent calls
+	if (connectionString) {
+		cachedConnectionString = connectionString;
+	}
+
 	// Reuse if same connection string and already set up
-	if (db && currentConnectionString === url) {
+	if (db && cachedConnectionString === url) {
 		return db;
 	}
 
@@ -34,7 +40,7 @@ export const getDb = (connectionString?: string): DrizzleDB => {
 	clientConnected = false;
 
 	db = drizzle(client, { schema, logger: true });
-	currentConnectionString = url;
+	cachedConnectionString = url;
 
 	if (!building) {
 		console.log('Drizzle ORM initialized!');
