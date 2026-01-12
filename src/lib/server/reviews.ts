@@ -2,19 +2,21 @@ import { sql, eq, and, desc } from 'drizzle-orm';
 import { getDb, reviews, likes, type ReviewWithLikes } from './db';
 
 export async function getReviews({
-	userUuid,
-	subject,
-	onlyLiked = false
+  userUuid,
+  subject,
+  onlyLiked = false
 }: {
-	userUuid?: string;
-	subject?: string;
-	onlyLiked?: boolean;
+  userUuid?: string;
+  subject?: string;
+  onlyLiked?: boolean;
 }): Promise<Array<ReviewWithLikes>> {
-	const db = getDb();
+  const db = getDb();
 
-	// Build the query using raw SQL for complex JOINs and aggregations
-	// This mirrors the original TypeORM query structure
-	const result = await db.execute<ReviewWithLikes>(sql`
+
+
+  // Build the query using raw SQL for complex JOINs and aggregations
+  // This mirrors the original TypeORM query structure
+  const result = await db.execute<ReviewWithLikes>(sql`
 		SELECT
 			r.date as date,
 			r.subject as subject,
@@ -33,12 +35,15 @@ export async function getReviews({
 		ORDER BY r.date DESC
 	`);
 
-	const rows = result.rows as ReviewWithLikes[];
+  const rows = result.map(row => ({
+    ...row,
+    date: new Date(row.date)
+  }));
+  // For onlyLiked queries, all results are liked by definition
+  if (onlyLiked) {
+    rows.forEach((r) => (r.is_liked = true));
+  }
+  console.log('Fetched reviews:', rows);
 
-	// For onlyLiked queries, all results are liked by definition
-	if (onlyLiked) {
-		rows.forEach((r) => (r.is_liked = true));
-	}
-
-	return rows;
+  return rows;
 }

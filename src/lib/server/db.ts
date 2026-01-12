@@ -1,58 +1,42 @@
-import { env } from '$env/dynamic/private';
-import { drizzle, type NodePgDatabase } from 'drizzle-orm/node-postgres';
-import pg from 'pg';
-import { building } from '$app/environment';
-import * as schema from './schema';
+import { pgSchema, text, uuid, timestamp, primaryKey } from 'drizzle-orm/pg-core';
 
-// Re-export schema for convenience
-export * from './schema';
+export const appSchema = pgSchema('reviewanything');
 
-// Type for the drizzle instance with schema
-export type DrizzleDB = NodePgDatabase<typeof schema>;
+export const reviews = appSchema.table(
+  'review',
+  {
+    uuid: uuid('uuid').defaultRandom().notNull(),
+    author: text('author').notNull(),
+    subject: text('subject').notNull(),
+    text: text('text').notNull(),
+    date: timestamp('date', { withTimezone: true, mode: "date" }).defaultNow().notNull()
+  },
+  (table) => [primaryKey({ columns: [table.uuid, table.author, table.subject, table.text, table.date] })]
+);
 
-let db: DrizzleDB | null = null;
-let client: pg.Client | null = null;
-let clientConnected = false;
-let cachedConnectionString: string | null = null;
+export const likes = appSchema.table(
+  'like',
+  {
+    user_uuid: uuid('user_uuid').notNull(),
+    review_uuid: uuid('review_uuid').notNull()
+  },
+  (table) => [primaryKey({ columns: [table.user_uuid, table.review_uuid] })]
+);
 
-export const getDb = (connectionString?: string): DrizzleDB => {
-	// Use provided connection string, or cached one, or env variable
-	const url = connectionString || cachedConnectionString || env.DB_URL;
+export type Review = typeof reviews.$inferSelect;
+export type NewReview = typeof reviews.$inferInsert;
+export type Like = typeof likes.$inferSelect;
+export type NewLike = typeof likes.$inferInsert;
 
-	if (!url) {
-		throw new Error('Database connection string not provided');
-	}
-
-	// Cache the connection string for subsequent calls
-	if (connectionString) {
-		cachedConnectionString = connectionString;
-	}
-
-	// Reuse if same connection string and already set up
-	if (db && cachedConnectionString === url) {
-		return db;
-	}
-
-	// Create new client
-	client = new pg.Client({
-		connectionString: url
-	});
-	clientConnected = false;
-
-	db = drizzle(client, { schema, logger: true });
-	cachedConnectionString = url;
-
-	if (!building) {
-		console.log('Drizzle ORM initialized!');
-	}
-
-	return db;
+export type ReviewWithLikes = Review & {
+  total_likes: number;
+  is_liked?: boolean;
 };
 
-// Must be called before any queries
-export const ensureConnected = async () => {
-	if (client && !clientConnected) {
-		await client.connect();
-		clientConnected = true;
-	}
+let db: ReturnType<typeof import('drizzle-orm/postgres-js').drizzle>;
+
+export const setDb = (database: ReturnType<typeof import('drizzle-orm/postgres-js').drizzle>) => {
+  db = database;
 };
+
+export const getDb = () => db;

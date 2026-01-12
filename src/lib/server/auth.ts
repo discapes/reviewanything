@@ -1,6 +1,6 @@
 import type { Cookies } from '@sveltejs/kit';
 import { jwtVerify, importSPKI } from 'jose';
-import { env } from '$env/dynamic/private';
+import { KC_PUBLIC_KEY } from '$env/static/private';
 
 export type ATPayload = {
   exp: number;
@@ -36,7 +36,7 @@ export type ATPayload = {
 
 const pubKeyPEM = `
 -----BEGIN PUBLIC KEY-----
-${env.KC_PUBLIC_KEY}
+${KC_PUBLIC_KEY}
 -----END PUBLIC KEY-----
 `;
 
@@ -45,7 +45,8 @@ export async function authenticate(cookies: Cookies) {
   if (!token) return undefined;
 
   try {
-    const ecPublicKey = await importSPKI(pubKeyPEM, 'RS256');
+    console.log(JSON.stringify({ pubKeyPEM }));
+    const ecPublicKey = await importSPKI(pubKeyPEM.trim(), 'RS256');
     const { payload } = await jwtVerify(token, ecPublicKey, {
       algorithms: ['RS256']
     });

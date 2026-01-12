@@ -9,13 +9,13 @@
 	let textarea = $state<HTMLTextAreaElement>();
 	let input = $state<HTMLInputElement>();
 
-	page.subscribe((p) => (fallback = p.data.thing));
+	page.subscribe((p) => ((fallback = p.data.thing), (thingText = p.data.thing)));
 
 	$effect(() => {
 		if (reviewText.length == 31) {
 			long = true;
 			setTimeout(() => textarea?.focus(), 0);
-		} else if (reviewText.length == 29) {
+		} else if (reviewText.length < 31 && long) {
 			long = false;
 			setTimeout(() => input?.focus(), 0);
 		}

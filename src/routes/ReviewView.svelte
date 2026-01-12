@@ -17,6 +17,7 @@
 		});
 		invalidateAll();
 	}
+	$inspect(review);
 </script>
 
 <div class="bg-stone-200 notice m-0! gap-3 flex flex-col overflow-clip">
@@ -24,7 +25,10 @@
 		<b><a href="/things/{review.subject}">{review.subject}</a></b>
 		<span class="dark:text-stone-400 text-stone-600">{review.date.toLocaleString()}</span>
 		<span>{review.total_likes}</span>
-		<button class="bg-transparent! border-0! p-0! hover:scale-125" onclick={() => like(review)}>
+		<button
+			class="bg-transparent! border-0! p-0! invert hover:scale-125"
+			onclick={() => like(review)}
+		>
 			<Icon icon={review.is_liked ? iHeart : iHeartOutline}></Icon></button
 		>
 	</div>

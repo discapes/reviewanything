@@ -1,0 +1,8 @@
+main = ".svelte-kit/cloudflare/_worker.js"
+assets.directory = ".svelte-kit/cloudflare"
+assets.binding = "ASSETS"
+compatibility_flags = [ "nodejs_compat_v2" ]
+
+[[hyperdrive]]
+binding = "HYPERDRIVE"
+id = "9ee938bdfc2e495883b0401c5a7375f4"

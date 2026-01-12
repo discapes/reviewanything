@@ -1,11 +1,11 @@
 import { defineConfig } from 'drizzle-kit';
 
 export default defineConfig({
-	schema: './src/lib/server/schema.ts',
-	out: './drizzle',
-	dialect: 'postgresql',
-	dbCredentials: {
-		url: process.env.DB_URL!
-	},
-	schemaFilter: ['reviewanything']
+  schema: './src/lib/server/db.ts',
+  out: './drizzle',
+  dialect: 'postgresql',
+  dbCredentials: {
+    url: process.env.DB_URL!
+  },
+  schemaFilter: ['reviewanything']
 });
